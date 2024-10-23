@@ -14,154 +14,98 @@ export interface Item {
 export const initialItems: Item[] = [
     // Abilities
     {
-        id: 'ability-dreamshaper',
-        name: 'Dreamshaper',
-        effect: 'Modify a dream spell to alter its effects or duration. This ability allows you to subtly change the nature of a dream you\'re influencing.',
+        id: 'ability-lucid-dreaming',
+        name: 'Lucid Dreaming',
+        effect: 'You gain the ability to control your own dreams. While sleeping, you can shape the content of your dreams, potentially gaining insight or information. This ability allows you to make Intelligence or Wisdom checks in your dreams to recall knowledge or gain intuition about problems you\'re facing in the waking world.',
         requiredLevel: 1,
         type: 'ability',
         cost: 1,
         enabled: true,
-        requirements: 'Must be used in conjunction with a dream spell'
+        requirements: 'Must be asleep'
     },
     {
-        id: 'ability-dream-tinkerer',
-        name: 'Dream Tinkerer',
-        effect: 'Significantly alter a dream spell, changing its fundamental nature or target. This ability allows for more drastic modifications to dreams.',
+        id: 'ability-dream-scan',
+        name: 'Dream Scan',
+        effect: 'You can delve into the dreams of others, gleaning surface thoughts and emotions. By expending phrenic pool points, you can make a Wisdom check to interpret the symbolism in the target\'s dreams. Success might reveal the target\'s current emotional state, recent significant events, or pressing concerns.',
         requiredLevel: 3,
         type: 'ability',
         cost: 2,
         enabled: true,
-        requirements: 'Must be used in conjunction with a dream spell'
+        requirements: 'Target must be asleep and within 30 feet'
     },
     {
-        id: 'ability-dream-weaver',
-        name: 'Dream Weaver',
-        effect: 'Completely reshape a dream spell, potentially creating entirely new scenarios or affecting multiple dreamers simultaneously.',
-        requiredLevel: 6,
+        id: 'ability-dream-travel',
+        name: 'Dream Travel',
+        effect: 'You can project your consciousness into the dreams of others. While in another\'s dream, you can interact with the dreamer and the dream environment. You can attempt to influence the dream\'s direction or extract deeper information from the dreamer\'s subconscious. Be warned: hostile actions in a dream might provoke psychic backlash.',
+        requiredLevel: 5,
         type: 'ability',
         cost: 3,
         enabled: true,
-        requirements: 'Must be used in conjunction with a dream spell'
+        requirements: 'Target must be asleep'
     },
     // Spells
     {
-        id: 'spell-detect-psychic-significance',
-        name: 'Detect Psychic Significance',
-        effect: 'Sense the presence and strength of psychic auras in the immediate vicinity. This spell can reveal recent psychic activity or the presence of psychically active beings.',
+        id: 'spell-dream',
+        name: 'Dream',
+        effect: 'This spell allows you to enter a creature\'s dream and deliver a message. You can appear as an image of yourself or as any other image the target would recognize. The target remembers the dream perfectly upon waking. The message can be up to ten minutes long and is delivered instantaneously to the target\'s dream.',
         requiredLevel: 1,
         type: 'spell',
         level: 1,
         restoreAmount: 1,
         enabled: true,
-        requirements: 'Requires a focus item, such as a small crystal or mirror'
-    },
-    {
-        id: 'spell-dream-scan',
-        name: 'Dream Scan',
-        effect: 'Gain surface-level information from a sleeping creature\'s current dream. This spell allows you to glimpse fragments of the dream without disturbing the dreamer.',
-        requiredLevel: 1,
-        type: 'spell',
-        level: 1,
-        restoreAmount: 1,
-        enabled: true,
-        requirements: 'Target must be asleep and within 30 feet'
+        requirements: 'Target must be asleep'
     },
     {
         id: 'spell-nightmare',
         name: 'Nightmare',
-        effect: 'Induce a frightening or unsettling dream in a sleeping target. The nightmare can cause mental fatigue and potentially reveal the target\'s fears or anxieties.',
+        effect: 'You send horrible visions to a sleeping target, preventing restful sleep. The target must make a Will save or wake up fatigued and unable to cast spells or use spell-like abilities for 24 hours. The nightmare also deals 1d10 points of damage. Only creatures with Intelligence scores of 6 or higher can be affected.',
         requiredLevel: 3,
         type: 'spell',
         level: 2,
         restoreAmount: 2,
         enabled: true,
-        requirements: 'Target must be asleep and within 60 feet'
+        requirements: 'Target must be asleep'
     },
     {
-        id: 'spell-dream-messenger',
-        name: 'Dream Messenger',
-        effect: 'Send a short message or vision to a sleeping creature. The message appears as part of the target\'s dream and can be remembered upon waking.',
+        id: 'spell-dream-council',
+        name: 'Dream Council',
+        effect: 'This advanced version of the dream spell allows you to communicate with multiple sleeping creatures simultaneously. You can deliver the same message to all targets or tailor individual messages. Each target remembers the dream upon waking. This spell is particularly useful for coordinating plans among scattered allies.',
         requiredLevel: 5,
         type: 'spell',
         level: 3,
         restoreAmount: 3,
         enabled: true,
-        requirements: 'Must know the target\'s name and general location'
+        requirements: 'Targets must be asleep'
     },
     // Powers
     {
-        id: 'power-lullaby',
-        name: 'Lullaby',
-        effect: 'Emit a soothing psychic melody that makes the target drowsy. This power can potentially put a target to sleep if they fail a willpower check.',
+        id: 'power-mindscape',
+        name: 'Mindscape',
+        effect: 'You create a shared dream space that multiple creatures can inhabit. Within this space, participants can interact as if they were in the same physical location. The mindscape can be shaped according to your will, potentially recreating real locations or fantastical environments. This power is useful for secure long-distance communication or shared problem-solving.',
         requiredLevel: 1,
         type: 'power',
         level: 1,
         enabled: true,
-        requirements: 'Target must be within line of sight and able to hear'
+        requirements: 'Targets must be willing and asleep'
     },
     {
-        id: 'power-sleep',
-        name: 'Sleep',
-        effect: 'Directly influence a target\'s mind to induce sleep. This power is more potent than Lullaby but requires more focus and energy.',
+        id: 'power-dreamshape',
+        name: 'Dreamshape',
+        effect: 'This power allows you to alter the content and environment of an existing dream. You can change the dream\'s setting, introduce or remove dream figures, and influence the overall tone of the dream. Skilled use of this power can be used to comfort allies, manipulate information in the target\'s subconscious, or even implant suggestions that persist after waking.',
         requiredLevel: 3,
         type: 'power',
         level: 2,
         enabled: true,
-        requirements: 'Target must be within 30 feet and not in combat'
+        requirements: 'Must be within an existing dream'
     },
     {
-        id: 'power-dream-link',
-        name: 'Dream Link',
-        effect: 'Establish a mental connection with a sleeping creature, allowing for two-way communication through dreams. This power enables more complex interactions within the dream state.',
+        id: 'power-dream-sight',
+        name: 'Dream Sight',
+        effect: 'You establish a sensory link with a sleeping creature, allowing you to see, hear, and potentially even feel what they are experiencing in their current location. This power can be used for remote reconnaissance, but be aware that particularly shocking or painful experiences felt by the target may resonate back to you, potentially causing psychic damage.',
         requiredLevel: 5,
         type: 'power',
         level: 3,
         enabled: true,
-        requirements: 'Target must be asleep and you must have previously encountered them'
-    },
-    // Additional Spells
-    {
-        id: 'spell-dream-leech',
-        name: 'Dream Leech',
-        effect: 'Siphon psychic energy from a sleeping target\'s dreams. This spell allows you to restore your own phrenic pool by drawing power from the target\'s subconscious, potentially leaving them mentally fatigued.',
-        requiredLevel: 7,
-        type: 'spell',
-        level: 4,
-        restoreAmount: 4,
-        enabled: true,
-        requirements: 'Target must be asleep and within 30 feet. May have negative effects on the target.'
-    },
-    {
-        id: 'spell-oneiromancy',
-        name: 'Oneiromancy',
-        effect: 'Interpret dreams to gain insight into future events or hidden truths. This powerful divination spell allows you to extract meaningful information from the chaotic realm of dreams.',
-        requiredLevel: 9,
-        type: 'spell',
-        level: 5,
-        restoreAmount: 5,
-        enabled: true,
-        requirements: 'Requires a personal item from the target and at least an hour of uninterrupted concentration.'
-    },
-
-    // Additional Powers
-    {
-        id: 'power-mind-heist',
-        name: 'Mind Heist',
-        effect: 'Infiltrate a sleeping target\'s mind to extract specific information or plant an idea. This advanced power allows for deep exploration of the target\'s subconscious and subtle manipulation of their thoughts.',
-        requiredLevel: 7,
-        type: 'power',
-        level: 4,
-        enabled: true,
-        requirements: 'Target must be in a deep sleep. Requires intense concentration and carries risks of psychic backlash.'
-    },
-    {
-        id: 'power-waking-dream',
-        name: 'Waking Dream',
-        effect: 'Induce a dream-like state in a conscious target, blurring the lines between reality and dreams. This power can be used to disorient enemies or to help allies access their subconscious while awake.',
-        requiredLevel: 9,
-        type: 'power',
-        level: 5,
-        enabled: true,
-        requirements: 'Target must be within line of sight. Effect lasts for a short duration and can be resisted with a strong will.'
+        requirements: 'Target must be asleep'
     }
 ];
