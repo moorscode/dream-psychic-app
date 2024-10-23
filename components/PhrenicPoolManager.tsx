@@ -353,7 +353,6 @@ const PhrenicPoolManager: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 20,
         backgroundColor: '#f0f0f0',
     },
     title: {
@@ -377,6 +376,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#3498db',
         padding: 10,
         borderRadius: 5,
+        elevation: 5,
+        borderWidth: 1,
+        borderColor: '#2980b9',
     },
     levelText: {
         fontSize: 18,
@@ -396,22 +398,31 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 20,
+        marginHorizontal: 20,
         fontWeight: 'bold',
         marginBottom: 10,
     },
     manageSpellsButton: {
         backgroundColor: '#4CAF50',
         padding: 10,
+        marginHorizontal: 20,
         borderRadius: 5,
         alignItems: 'center',
         marginBottom: 10,
+        elevation: 5,
+        borderWidth: 1,
+        borderColor: '#45a049',
     },
     restoreButton: {
         backgroundColor: '#e74c3c',
+        marginHorizontal: 20,
         padding: 15,
         borderRadius: 5,
         alignItems: 'center',
         marginBottom: 20,
+        elevation: 5,
+        borderWidth: 1,
+        borderColor: '#c0392b',
     },
     modalContainer: {
         flex: 1,
@@ -461,6 +472,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         alignItems: 'center',
         marginTop: 15,
+        elevation: 5,
+        borderWidth: 1,
+        borderColor: '#d32f2f',
     },
     toggleContainer: {
         flexDirection: 'row',

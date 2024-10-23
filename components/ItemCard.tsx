@@ -84,13 +84,30 @@ const styles = StyleSheet.create({
     card: {
         borderRadius: 10,
         marginBottom: 10,
+        marginHorizontal: 20,
         padding: 15,
         borderWidth: 1,
         borderColor: '#000',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.23,
+        shadowRadius: 2.62,
+        elevation: 4,
     },
     inactiveCard: {
         opacity: 0.8,
         backgroundColor: '#d3d3d3',
+        shadowColor: "transparent",
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0,
     },
     cardHeader: {
         flexDirection: 'row',
