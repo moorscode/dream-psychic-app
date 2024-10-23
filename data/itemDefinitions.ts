@@ -61,6 +61,7 @@ export const initialItems: Item[] = [
         requiredLevel: 1,
         type: 'spell',
         level: 1,
+        cost: 1,
         restoreAmount: 1,
         enabled: true,
         requirements: 'Target must be within range (90 feet)'
@@ -72,7 +73,8 @@ export const initialItems: Item[] = [
         requiredLevel: 3,
         type: 'spell',
         level: 2,
-        restoreAmount: 2,
+        cost: 2,
+        restoreAmount: 1,
         enabled: true,
         requirements: 'Target must be asleep'
     },
@@ -83,7 +85,8 @@ export const initialItems: Item[] = [
         requiredLevel: 5,
         type: 'spell',
         level: 3,
-        restoreAmount: 3,
+        cost: 3,
+        restoreAmount: 2,
         enabled: true,
         requirements: 'Target must be asleep'
     },
@@ -94,7 +97,8 @@ export const initialItems: Item[] = [
         requiredLevel: 7,
         type: 'spell',
         level: 4,
-        restoreAmount: 4,
+        cost: 4,
+        restoreAmount: 2,
         enabled: true,
         requirements: 'Targets must be asleep'
     },
@@ -105,7 +109,8 @@ export const initialItems: Item[] = [
         requiredLevel: 6,
         type: 'spell',
         level: 3,
-        restoreAmount: 3,
+        cost: 3,
+        restoreAmount: 2,
         enabled: true,
         requirements: 'Target must be asleep and within 30 feet'
     },
@@ -116,7 +121,8 @@ export const initialItems: Item[] = [
         requiredLevel: 8,
         type: 'spell',
         level: 4,
-        restoreAmount: 4,
+        cost: 4,
+        restoreAmount: 2,
         enabled: true,
         requirements: 'Must be in a quiet, undisturbed environment'
     },
@@ -127,7 +133,8 @@ export const initialItems: Item[] = [
         requiredLevel: 9,
         type: 'spell',
         level: 5,
-        restoreAmount: 5,
+        cost: 5,
+        restoreAmount: 3,
         enabled: true,
         requirements: 'Target must be asleep and you must have some prior knowledge of the target'
     },
@@ -139,6 +146,8 @@ export const initialItems: Item[] = [
         requiredLevel: 1,
         type: 'power',
         level: 1,
+        cost: 1,
+        restoreAmount: 1,
         enabled: true,
         requirements: 'Targets must be willing and asleep'
     },
@@ -149,6 +158,8 @@ export const initialItems: Item[] = [
         requiredLevel: 3,
         type: 'power',
         level: 2,
+        cost: 2,
+        restoreAmount: 1,
         enabled: true,
         requirements: 'Must be asleep'
     },
@@ -159,6 +170,8 @@ export const initialItems: Item[] = [
         requiredLevel: 5,
         type: 'power',
         level: 3,
+        cost: 3,
+        restoreAmount: 2,
         enabled: true,
         requirements: 'Must be in combat'
     },
@@ -169,6 +182,8 @@ export const initialItems: Item[] = [
         requiredLevel: 7,
         type: 'power',
         level: 4,
+        cost: 4,
+        restoreAmount: 2,
         enabled: true,
         requirements: 'Target must be asleep'
     },
@@ -179,7 +194,40 @@ export const initialItems: Item[] = [
         requiredLevel: 9,
         type: 'power',
         level: 5,
+        cost: 5,
+        restoreAmount: 3,
         enabled: true,
         requirements: 'Target must be conscious and within line of sight'
+    },
+    // Phrenic Amplifications
+    {
+        id: 'amplification-mental-clarity',
+        name: 'Mental Clarity',
+        effect: 'You gain a +2 bonus on all Intelligence checks and saving throws for 1 hour.',
+        requiredLevel: 2,
+        type: 'ability',
+        cost: 2,
+        enabled: true,
+        requirements: 'Must be in a calm environment'
+    },
+    {
+        id: 'amplification-psychic-resilience',
+        name: 'Psychic Resilience',
+        effect: 'You gain resistance to psychic damage for 1 hour.',
+        requiredLevel: 4,
+        type: 'ability',
+        cost: 3,
+        enabled: true,
+        requirements: 'Must be in a safe location'
+    },
+    {
+        id: 'amplification-dream-empowerment',
+        name: 'Dream Empowerment',
+        effect: 'You can enhance the effects of your spells for 1 hour, increasing their effectiveness by 50%.',
+        requiredLevel: 6,
+        type: 'ability',
+        cost: 4,
+        enabled: true,
+        requirements: 'Must be in a dream state'
     }
 ];
