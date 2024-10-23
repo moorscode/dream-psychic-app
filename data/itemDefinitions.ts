@@ -43,6 +43,16 @@ export const initialItems: Item[] = [
         enabled: true,
         requirements: 'Target must be asleep'
     },
+    {
+        id: 'ability-dream-leech',
+        name: 'Dream Leech',
+        effect: 'You can siphon psychic energy from a sleeping target\'s dreams, replenishing your own phrenic pool. This ability requires a successful Wisdom check, with the difficulty based on the target\'s mental fortitude. On a success, you restore 1d4 points to your phrenic pool, while the target experiences restless sleep and may wake feeling slightly fatigued.',
+        requiredLevel: 7,
+        type: 'ability',
+        cost: 2,
+        enabled: true,
+        requirements: 'Target must be asleep and within 60 feet'
+    },
     // Spells
     {
         id: 'spell-dream',
@@ -77,6 +87,17 @@ export const initialItems: Item[] = [
         enabled: true,
         requirements: 'Targets must be asleep'
     },
+    {
+        id: 'spell-oneiromancy',
+        name: 'Oneiromancy',
+        effect: 'You can peer into the future through the medium of dreams. Cast this spell before sleeping, and you\'ll experience vivid, prophetic dreams. Upon waking, make a Wisdom check. The higher the result, the more accurate and detailed your glimpse of future events will be. This spell can provide valuable insights, but the future seen is not set in stone and can be changed by actions in the present.',
+        requiredLevel: 7,
+        type: 'spell',
+        level: 4,
+        restoreAmount: 2,
+        enabled: true,
+        requirements: 'Must be cast before sleeping'
+    },
     // Powers
     {
         id: 'power-mindscape',
@@ -107,5 +128,25 @@ export const initialItems: Item[] = [
         level: 3,
         enabled: true,
         requirements: 'Target must be asleep'
+    },
+    {
+        id: 'power-mind-heist',
+        name: 'Mind Heist',
+        effect: 'This advanced power allows you to infiltrate a target\'s subconscious while they sleep, searching for specific information or memories. You navigate through a dreamscape representation of the target\'s mind, overcoming mental defenses and solving subconscious puzzles to reach the desired information. Success depends on your mental agility and the strength of the target\'s mental fortifications.',
+        requiredLevel: 7,
+        type: 'power',
+        level: 4,
+        enabled: true,
+        requirements: 'Target must be in deep sleep'
+    },
+    {
+        id: 'power-waking-dream',
+        name: 'Waking Dream',
+        effect: 'You can briefly pull a conscious target into a dream-like state while they\'re awake. For a few moments, the target experiences a vivid hallucination that you control. This can be used to distract, confuse, or even briefly incapacitate a target. The target gets a Will save to resist, and those with strong minds may recognize the experience as an illusion.',
+        requiredLevel: 9,
+        type: 'power',
+        level: 5,
+        enabled: true,
+        requirements: 'Target must be conscious and within line of sight'
     }
 ];
