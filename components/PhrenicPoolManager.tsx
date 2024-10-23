@@ -22,6 +22,7 @@ const PhrenicPoolManager: React.FC = () => {
     const [level, setLevel] = useState(1);
     const [phrenicPool, setPhrenicPool] = useState(0);
     const [items, setItems] = useState<Item[]>([]);
+    const [activatedSpells, setActivatedSpells] = useState<string[]>([]);
     const [isSpellManagementVisible, setIsSpellManagementVisible] = useState(false);
     const [showAllLevels, setShowAllLevels] = useState(false);
 
@@ -37,45 +38,153 @@ const PhrenicPoolManager: React.FC = () => {
 
     useEffect(() => {
         saveData();
-    }, [level, phrenicPool, items]);
+    }, [level, phrenicPool, activatedSpells]);
 
     const loadSavedData = async () => {
         try {
-            const [savedLevel, savedPhrenicPool, savedItems] = await Promise.all([
+            const [savedLevel, savedPhrenicPool, savedActivatedSpells] = await Promise.all([
                 AsyncStorage.getItem('level'),
                 AsyncStorage.getItem('phrenicPool'),
-                AsyncStorage.getItem('items')
+                AsyncStorage.getItem('activatedSpells')
             ]);
 
-            if (savedLevel) setLevel(Math.min(Math.max(parseInt(savedLevel, 10), 1), 20));
-            if (savedPhrenicPool) setPhrenicPool(Math.min(Math.max(parseInt(savedPhrenicPool, 10), 0), calculatePhrenicPool(level)));
-            if (savedItems) {
-                setItems(JSON.parse(savedItems));
+            const newLevel = savedLevel ? Math.min(Math.max(parseInt(savedLevel, 10), 1), 20) : 1;
+            setLevel(newLevel);
+
+            if (savedPhrenicPool) {
+                setPhrenicPool(Math.min(Math.max(parseInt(savedPhrenicPool, 10), 0), calculatePhrenicPool(newLevel)));
             } else {
-                initializeItems();
+                setPhrenicPool(calculatePhrenicPool(newLevel)); // Start with full phrenic pool if not saved
             }
+
+            if (savedActivatedSpells) {
+                setActivatedSpells(JSON.parse(savedActivatedSpells));
+            }
+
+            setItems(initialItems);
         } catch (error) {
             console.error('Error loading saved data:', error);
-            initializeItems();
+            setItems(initialItems);
+            setPhrenicPool(calculatePhrenicPool(level)); // Start with full phrenic pool on error
         }
     };
 
-    const initializeItems = () => {
-        const initialItems: Item[] = [
-            { id: 'ability-1', name: 'Dreamshaper', effect: 'Modify dream spell', requiredLevel: 1, type: 'ability', cost: 1, enabled: true } as Item,
-            { id: 'spell-1', name: 'Detect Psychic Significance', effect: 'Sense psychic auras', requiredLevel: 1, type: 'spell', level: 1, restoreAmount: 1, enabled: true } as Item,
-            { id: 'power-1', name: 'Lullaby', effect: 'Makes target drowsy', requiredLevel: 1, type: 'power', level: 1, enabled: true } as Item,
-        ].sort((a, b) => a.requiredLevel - b.requiredLevel);
-
-        setItems(initialItems);
-    };
+    const initialItems: Item[] = [
+        // Abilities
+        {
+            id: 'ability-dreamshaper',
+            name: 'Dreamshaper',
+            effect: 'Modify a dream spell to alter its effects or duration. This ability allows you to subtly change the nature of a dream you\'re influencing.',
+            requiredLevel: 1,
+            type: 'ability',
+            cost: 1,
+            enabled: true,
+            requirements: 'Must be used in conjunction with a dream spell'
+        },
+        {
+            id: 'ability-dream-tinkerer',
+            name: 'Dream Tinkerer',
+            effect: 'Significantly alter a dream spell, changing its fundamental nature or target. This ability allows for more drastic modifications to dreams.',
+            requiredLevel: 3,
+            type: 'ability',
+            cost: 2,
+            enabled: true,
+            requirements: 'Must be used in conjunction with a dream spell'
+        },
+        {
+            id: 'ability-dream-weaver',
+            name: 'Dream Weaver',
+            effect: 'Completely reshape a dream spell, potentially creating entirely new scenarios or affecting multiple dreamers simultaneously.',
+            requiredLevel: 6,
+            type: 'ability',
+            cost: 3,
+            enabled: true,
+            requirements: 'Must be used in conjunction with a dream spell'
+        },
+        // Spells
+        {
+            id: 'spell-detect-psychic-significance',
+            name: 'Detect Psychic Significance',
+            effect: 'Sense the presence and strength of psychic auras in the immediate vicinity. This spell can reveal recent psychic activity or the presence of psychically active beings.',
+            requiredLevel: 1,
+            type: 'spell',
+            level: 1,
+            restoreAmount: 1,
+            enabled: true,
+            requirements: 'Requires a focus item, such as a small crystal or mirror'
+        },
+        {
+            id: 'spell-dream-scan',
+            name: 'Dream Scan',
+            effect: 'Gain surface-level information from a sleeping creature\'s current dream. This spell allows you to glimpse fragments of the dream without disturbing the dreamer.',
+            requiredLevel: 1,
+            type: 'spell',
+            level: 1,
+            restoreAmount: 1,
+            enabled: true,
+            requirements: 'Target must be asleep and within 30 feet'
+        },
+        {
+            id: 'spell-nightmare',
+            name: 'Nightmare',
+            effect: 'Induce a frightening or unsettling dream in a sleeping target. The nightmare can cause mental fatigue and potentially reveal the target\'s fears or anxieties.',
+            requiredLevel: 3,
+            type: 'spell',
+            level: 2,
+            restoreAmount: 2,
+            enabled: true,
+            requirements: 'Target must be asleep and within 60 feet'
+        },
+        {
+            id: 'spell-dream-messenger',
+            name: 'Dream Messenger',
+            effect: 'Send a short message or vision to a sleeping creature. The message appears as part of the target\'s dream and can be remembered upon waking.',
+            requiredLevel: 5,
+            type: 'spell',
+            level: 3,
+            restoreAmount: 3,
+            enabled: true,
+            requirements: 'Must know the target\'s name and general location'
+        },
+        // Powers
+        {
+            id: 'power-lullaby',
+            name: 'Lullaby',
+            effect: 'Emit a soothing psychic melody that makes the target drowsy. This power can potentially put a target to sleep if they fail a willpower check.',
+            requiredLevel: 1,
+            type: 'power',
+            level: 1,
+            enabled: true,
+            requirements: 'Target must be within line of sight and able to hear'
+        },
+        {
+            id: 'power-sleep',
+            name: 'Sleep',
+            effect: 'Directly influence a target\'s mind to induce sleep. This power is more potent than Lullaby but requires more focus and energy.',
+            requiredLevel: 3,
+            type: 'power',
+            level: 2,
+            enabled: true,
+            requirements: 'Target must be within 30 feet and not in combat'
+        },
+        {
+            id: 'power-dream-link',
+            name: 'Dream Link',
+            effect: 'Establish a mental connection with a sleeping creature, allowing for two-way communication through dreams. This power enables more complex interactions within the dream state.',
+            requiredLevel: 5,
+            type: 'power',
+            level: 3,
+            enabled: true,
+            requirements: 'Target must be asleep and you must have previously encountered them'
+        }
+    ];
 
     const saveData = async () => {
         try {
             const data = {
                 level: level.toString(),
                 phrenicPool: phrenicPool.toString(),
-                items: JSON.stringify(items)
+                activatedSpells: JSON.stringify(activatedSpells)
             };
             await AsyncStorage.multiSet(Object.entries(data));
         } catch (error) {
@@ -110,11 +219,13 @@ const PhrenicPoolManager: React.FC = () => {
     }, [level, playSound]);
 
     const toggleItemEnabled = useCallback((id: string) => {
-        setItems(prevItems =>
-            prevItems.map(item =>
-                item.id === id ? { ...item, enabled: !item.enabled } : item
-            )
-        );
+        setActivatedSpells(prevActivatedSpells => {
+            if (prevActivatedSpells.includes(id)) {
+                return prevActivatedSpells.filter(spellId => spellId !== id);
+            } else {
+                return [...prevActivatedSpells, id];
+            }
+        });
     }, []);
 
     const isItemAvailable = useCallback((item: Item) => {
@@ -122,12 +233,18 @@ const PhrenicPoolManager: React.FC = () => {
         if (item.type === 'ability' && phrenicPool < (item.cost || 0)) return false;
         if ((item.type === 'spell' || item.type === 'power') && item.cost && phrenicPool < item.cost) return false;
         return true;
-    }, [level, phrenicPool]);
+    }, [level, phrenicPool, showAllLevels]);
 
     const renderItems = useCallback(() => {
         return items
-            .filter(item => item.type !== 'spell' || item.enabled)
+            .filter(item => item.type !== 'spell' || activatedSpells.includes(item.id))
             .filter(item => showAllLevels || item.requiredLevel <= level)
+            .sort((a, b) => {
+                if (a.requiredLevel !== b.requiredLevel) {
+                    return a.requiredLevel - b.requiredLevel;
+                }
+                return (a.cost || 0) - (b.cost || 0);
+            })
             .map(item => (
                 <ItemCard
                     key={item.id}
@@ -142,7 +259,7 @@ const PhrenicPoolManager: React.FC = () => {
                     phrenicPool={phrenicPool}
                 />
             ));
-    }, [items, showAllLevels, level, isItemAvailable, useAbility, castSpell, usePower, phrenicPool]);
+    }, [items, activatedSpells, showAllLevels, level, isItemAvailable, useAbility, castSpell, usePower, phrenicPool]);
 
     const changeLevel = useCallback((increment: number) => {
         setLevel(prev => {
@@ -214,7 +331,7 @@ const PhrenicPoolManager: React.FC = () => {
                                             <Text style={styles.spellLevel}>Level: {spell.requiredLevel}</Text>
                                         </View>
                                         <Switch
-                                            value={spell.enabled}
+                                            value={activatedSpells.includes(spell.id)}
                                             onValueChange={() => toggleItemEnabled(spell.id)}
                                         />
                                     </View>
@@ -236,6 +353,7 @@ const PhrenicPoolManager: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        paddingHorizontal: 20,
         backgroundColor: '#f0f0f0',
     },
     title: {

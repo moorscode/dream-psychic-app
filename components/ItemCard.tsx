@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
         borderColor: '#000',
     },
     inactiveCard: {
-        opacity: 0.6,
+        opacity: 0.8,
         backgroundColor: '#d3d3d3',
     },
     cardHeader: {
