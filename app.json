@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "psychic-helper",
+    "name": "Dream Psychic Helper (DND PF1e)",
     "slug": "psychic-helper",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.moorscode.psychichelper"
