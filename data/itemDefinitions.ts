@@ -16,7 +16,7 @@ export const initialItems: Item[] = [
     {
         id: 'ability-lucid-dreaming',
         name: 'Lucid Dreaming',
-        effect: 'You gain the ability to control your own dreams. While sleeping, you can shape the content of your dreams, potentially gaining insight or information. This ability allows you to make Intelligence or Wisdom checks in your dreams to recall knowledge or gain intuition about problems you\'re facing in the waking world.',
+        effect: 'You can attempt to control your dreams. Make a Will save (DC 20) when you fall asleep. If successful, you can control the content of your dreams and potentially gain insight or information.',
         requiredLevel: 1,
         type: 'ability',
         cost: 1,
@@ -26,7 +26,7 @@ export const initialItems: Item[] = [
     {
         id: 'ability-dream-scan',
         name: 'Dream Scan',
-        effect: 'You can delve into the dreams of others, gleaning surface thoughts and emotions. By expending phrenic pool points, you can make a Wisdom check to interpret the symbolism in the target\'s dreams. Success might reveal the target\'s current emotional state, recent significant events, or pressing concerns.',
+        effect: 'You can scan the dreams of a sleeping creature within 30 feet. Make a Wisdom check (DC 15 + target\'s HD) to gain insight into their current emotional state or recent experiences.',
         requiredLevel: 3,
         type: 'ability',
         cost: 2,
@@ -34,9 +34,9 @@ export const initialItems: Item[] = [
         requirements: 'Target must be asleep and within 30 feet'
     },
     {
-        id: 'ability-dream-travel',
-        name: 'Dream Travel',
-        effect: 'You can project your consciousness into the dreams of others. While in another\'s dream, you can interact with the dreamer and the dream environment. You can attempt to influence the dream\'s direction or extract deeper information from the dreamer\'s subconscious. Be warned: hostile actions in a dream might provoke psychic backlash.',
+        id: 'ability-dreamshaper',
+        name: 'Dreamshaper',
+        effect: 'You can alter the content of a sleeping creature\'s dreams. Make a Will save (DC 20) to change the dream\'s setting, introduce or remove dream figures, or influence the overall tone.',
         requiredLevel: 5,
         type: 'ability',
         cost: 3,
@@ -44,31 +44,31 @@ export const initialItems: Item[] = [
         requirements: 'Target must be asleep'
     },
     {
-        id: 'ability-dream-leech',
-        name: 'Dream Leech',
-        effect: 'You can siphon psychic energy from a sleeping target\'s dreams, replenishing your own phrenic pool. This ability requires a successful Wisdom check, with the difficulty based on the target\'s mental fortitude. On a success, you restore 1d4 points to your phrenic pool, while the target experiences restless sleep and may wake feeling slightly fatigued.',
+        id: 'ability-dream-travel',
+        name: 'Dream Travel',
+        effect: 'You can enter the dreams of others. While in another\'s dream, you can interact with the dreamer and the dream environment. Hostile actions may provoke psychic backlash.',
         requiredLevel: 7,
         type: 'ability',
-        cost: 2,
+        cost: 4,
         enabled: true,
-        requirements: 'Target must be asleep and within 60 feet'
+        requirements: 'Target must be asleep'
     },
     // Spells
     {
-        id: 'spell-dream',
-        name: 'Dream',
-        effect: 'This spell allows you to enter a creature\'s dream and deliver a message. You can appear as an image of yourself or as any other image the target would recognize. The target remembers the dream perfectly upon waking. The message can be up to ten minutes long and is delivered instantaneously to the target\'s dream.',
+        id: 'spell-sleep',
+        name: 'Sleep',
+        effect: 'This spell causes a magical slumber to come upon 4 HD of creatures. Creatures with the fewest HD are affected first. Among creatures with equal HD, those who are closest to the spell\'s point of origin are affected first. Affected creatures fall into a natural sleep and can be awakened normally. Sleep does not affect unconscious creatures, constructs, or undead creatures.',
         requiredLevel: 1,
         type: 'spell',
         level: 1,
         restoreAmount: 1,
         enabled: true,
-        requirements: 'Target must be asleep'
+        requirements: 'Target must be within range (90 feet)'
     },
     {
-        id: 'spell-nightmare',
-        name: 'Nightmare',
-        effect: 'You send horrible visions to a sleeping target, preventing restful sleep. The target must make a Will save or wake up fatigued and unable to cast spells or use spell-like abilities for 24 hours. The nightmare also deals 1d10 points of damage. Only creatures with Intelligence scores of 6 or higher can be affected.',
+        id: 'spell-dream',
+        name: 'Dream',
+        effect: 'You, or a messenger you touch, send a message to others in the form of a dream. At the beginning of the spell, you must name the recipient or identify them by some title that leaves no doubt as to identity. The messenger then enters a trance, appears in the intended recipient\'s dream, and delivers the message. The message can be up to twenty-five words long. The recipient recognizes you as the sender if they know you.',
         requiredLevel: 3,
         type: 'spell',
         level: 2,
@@ -77,32 +77,65 @@ export const initialItems: Item[] = [
         requirements: 'Target must be asleep'
     },
     {
-        id: 'spell-dream-council',
-        name: 'Dream Council',
-        effect: 'This advanced version of the dream spell allows you to communicate with multiple sleeping creatures simultaneously. You can deliver the same message to all targets or tailor individual messages. Each target remembers the dream upon waking. This spell is particularly useful for coordinating plans among scattered allies.',
+        id: 'spell-nightmare',
+        name: 'Nightmare',
+        effect: 'You send a hideous and unsettling phantasmal vision to a specific creature that you name or otherwise specifically designate. The nightmare prevents restful sleep and causes 1d10 points of damage. The subject is also fatigued and unable to regain arcane spells for the next 24 hours. The nightmare leaves the subject shaken for 1d4 × 10 minutes after waking. Dispel evil cast on the subject while you are casting the spell dispels the nightmare and stuns you for 10 minutes per caster level of the dispel evil.',
         requiredLevel: 5,
         type: 'spell',
         level: 3,
         restoreAmount: 3,
         enabled: true,
+        requirements: 'Target must be asleep'
+    },
+    {
+        id: 'spell-dream-council',
+        name: 'Dream Council',
+        effect: 'As dream, but you can affect multiple creatures with the same message. You can include up to one creature per caster level in the dream council. All recipients receive the same message, which can be up to twenty-five words long. Each recipient recognizes you as the sender if they know you.',
+        requiredLevel: 7,
+        type: 'spell',
+        level: 4,
+        restoreAmount: 4,
+        enabled: true,
         requirements: 'Targets must be asleep'
+    },
+    {
+        id: 'spell-dream-leech',
+        name: 'Dream Leech',
+        effect: 'You invade the dreams of a sleeping creature and siphon their mental energy. Make a Will save (DC 15 + target\'s HD). If successful, you drain 1d4 temporary Wisdom from the target and gain a +2 bonus to all Intelligence-based skill checks for 1 hour per point drained. The target awakens feeling unrested and suffers a -2 penalty to Will saves for 24 hours.',
+        requiredLevel: 6,
+        type: 'spell',
+        level: 3,
+        restoreAmount: 3,
+        enabled: true,
+        requirements: 'Target must be asleep and within 30 feet'
     },
     {
         id: 'spell-oneiromancy',
         name: 'Oneiromancy',
-        effect: 'You can peer into the future through the medium of dreams. Cast this spell before sleeping, and you\'ll experience vivid, prophetic dreams. Upon waking, make a Wisdom check. The higher the result, the more accurate and detailed your glimpse of future events will be. This spell can provide valuable insights, but the future seen is not set in stone and can be changed by actions in the present.',
-        requiredLevel: 7,
+        effect: 'You enter a trance-like state and gain prophetic visions from the realm of dreams. Make an Intelligence check (DC 20). If successful, you gain insight into a specific question or problem you focus on. The GM provides cryptic but helpful information. Critical success (DC 25+) provides clearer visions. This spell can only be cast once per week.',
+        requiredLevel: 8,
         type: 'spell',
         level: 4,
-        restoreAmount: 2,
+        restoreAmount: 4,
         enabled: true,
-        requirements: 'Must be cast before sleeping'
+        requirements: 'Must be in a quiet, undisturbed environment'
+    },
+    {
+        id: 'spell-mind-heist',
+        name: 'Mind Heist',
+        effect: 'You project your consciousness into the mind of a sleeping creature to steal a specific memory or piece of information. Make an opposed Will save against the target. If successful, you can extract one memory or piece of information the target knows. Critical success allows you to take the information without the target realizing it\'s been stolen. Failure alerts the target and may cause psychic damage to you.',
+        requiredLevel: 9,
+        type: 'spell',
+        level: 5,
+        restoreAmount: 5,
+        enabled: true,
+        requirements: 'Target must be asleep and you must have some prior knowledge of the target'
     },
     // Powers
     {
         id: 'power-mindscape',
         name: 'Mindscape',
-        effect: 'You create a shared dream space that multiple creatures can inhabit. Within this space, participants can interact as if they were in the same physical location. The mindscape can be shaped according to your will, potentially recreating real locations or fantastical environments. This power is useful for secure long-distance communication or shared problem-solving.',
+        effect: 'You create a shared dream space that you and one or more other creatures can enter. You can shape this space to your will.',
         requiredLevel: 1,
         type: 'power',
         level: 1,
@@ -110,39 +143,39 @@ export const initialItems: Item[] = [
         requirements: 'Targets must be willing and asleep'
     },
     {
-        id: 'power-dreamshape',
-        name: 'Dreamshape',
-        effect: 'This power allows you to alter the content and environment of an existing dream. You can change the dream\'s setting, introduce or remove dream figures, and influence the overall tone of the dream. Skilled use of this power can be used to comfort allies, manipulate information in the target\'s subconscious, or even implant suggestions that persist after waking.',
+        id: 'power-dream-shield',
+        name: 'Dream Shield',
+        effect: 'You create a barrier around your mind while you sleep, granting you a +4 bonus to Will saves against mind-affecting effects and dream manipulation.',
         requiredLevel: 3,
         type: 'power',
         level: 2,
         enabled: true,
-        requirements: 'Must be within an existing dream'
+        requirements: 'Must be asleep'
     },
     {
-        id: 'power-dream-sight',
-        name: 'Dream Sight',
-        effect: 'You establish a sensory link with a sleeping creature, allowing you to see, hear, and potentially even feel what they are experiencing in their current location. This power can be used for remote reconnaissance, but be aware that particularly shocking or painful experiences felt by the target may resonate back to you, potentially causing psychic damage.',
+        id: 'power-oneiric-horror',
+        name: 'Oneiric Horror',
+        effect: 'You manifest a terrifying dream creature to attack your enemies. The creature has your BAB and saves, and deals 1d8 + your Wisdom modifier in damage.',
         requiredLevel: 5,
         type: 'power',
         level: 3,
         enabled: true,
-        requirements: 'Target must be asleep'
+        requirements: 'Must be in combat'
     },
     {
-        id: 'power-mind-heist',
-        name: 'Mind Heist',
-        effect: 'This advanced power allows you to infiltrate a target\'s subconscious while they sleep, searching for specific information or memories. You navigate through a dreamscape representation of the target\'s mind, overcoming mental defenses and solving subconscious puzzles to reach the desired information. Success depends on your mental agility and the strength of the target\'s mental fortifications.',
+        id: 'power-dream-sight',
+        name: 'Dream Sight',
+        effect: 'You can see through the eyes of a sleeping creature, gaining visual information about its surroundings.',
         requiredLevel: 7,
         type: 'power',
         level: 4,
         enabled: true,
-        requirements: 'Target must be in deep sleep'
+        requirements: 'Target must be asleep'
     },
     {
         id: 'power-waking-dream',
         name: 'Waking Dream',
-        effect: 'You can briefly pull a conscious target into a dream-like state while they\'re awake. For a few moments, the target experiences a vivid hallucination that you control. This can be used to distract, confuse, or even briefly incapacitate a target. The target gets a Will save to resist, and those with strong minds may recognize the experience as an illusion.',
+        effect: 'You can briefly pull a conscious target into a dream-like state. The target must make a Will save (DC 10 + your caster level + your Wisdom modifier) or be confused for 1d4 rounds. On a successful save, the target is dazed for 1 round. This power can be used once per day per target.',
         requiredLevel: 9,
         type: 'power',
         level: 5,
