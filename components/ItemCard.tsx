@@ -23,51 +23,56 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ item, isAvailable, onUse, level, phrenicPool }) => {
-    const bgColor = item.type === 'ability' ? '#e6d2aa' : item.type === 'spell' ? '#b3d9ff' : '#ffb3ba';
+    const bgColor = {
+        ability: '#e6d2aa',
+        spell: '#b3d9ff',
+        power: '#ffb3ba'
+    }[item.type];
 
     const handlePress = () => {
         if (isAvailable) {
             onUse();
         } else {
-            if (level < item.requiredLevel) {
-                Alert.alert('Level Too Low', `You need to be at least level ${item.requiredLevel} to use ${item.name}.`);
-            } else if (item.cost && phrenicPool < item.cost) {
-                Alert.alert('Insufficient Phrenic Pool', `You need ${item.cost} phrenic points to use ${item.name}. Current pool: ${phrenicPool}`);
-            } else {
-                Alert.alert('Not Available', `You can't use ${item.name} right now.`);
-            }
+            const message = level < item.requiredLevel
+                ? `You need to be at least level ${item.requiredLevel} to use ${item.name}.`
+                : item.cost && phrenicPool < item.cost
+                    ? `You need ${item.cost} phrenic points to use ${item.name}. Current pool: ${phrenicPool}`
+                    : `You can't use ${item.name} right now.`;
+            Alert.alert('Not Available', message);
         }
     };
 
+    const cardStyle = [
+        styles.card,
+        { backgroundColor: bgColor },
+        !isAvailable && styles.inactiveCard
+    ];
+
+    const textStyle = !isAvailable && styles.inactiveText;
+
     return (
         <TouchableOpacity
-            style={[
-                styles.card,
-                { backgroundColor: bgColor },
-                !isAvailable && styles.inactiveCard
-            ]}
+            style={cardStyle}
             onPress={handlePress}
             disabled={!isAvailable}
         >
             <View style={styles.cardHeader}>
-                <Text style={[styles.cardName, !isAvailable && styles.inactiveText]}>{item.name}</Text>
-                <Text style={[styles.cardCost, !isAvailable && styles.inactiveText]}>
-                    {item.cost ? `Cost: ${item.cost}` :
-                        item.type === 'spell' ? `Level: ${item.level}` :
-                            `Level: ${item.level}`}
+                <Text style={[styles.cardName, textStyle]}>{item.name}</Text>
+                <Text style={[styles.cardCost, textStyle]}>
+                    {item.cost ? `Cost: ${item.cost}` : `Level: ${item.level}`}
                 </Text>
             </View>
             <View style={styles.cardBody}>
-                <Text style={[styles.cardType, !isAvailable && styles.inactiveText]}>
+                <Text style={[styles.cardType, textStyle]}>
                     {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
                 </Text>
-                <Text style={[styles.cardEffect, !isAvailable && styles.inactiveText]}>{item.effect}</Text>
+                <Text style={[styles.cardEffect, textStyle]}>{item.effect}</Text>
             </View>
             <View style={styles.cardFooter}>
-                <Text style={[styles.cardRequirements, !isAvailable && styles.inactiveText]}>
+                <Text style={[styles.cardRequirements, textStyle]}>
                     {item.requirements ? `Requirements: ${item.requirements}` : 'No special requirements'}
                 </Text>
-                <Text style={[styles.cardRequiredLevel, !isAvailable && styles.inactiveText]}>
+                <Text style={[styles.cardRequiredLevel, textStyle]}>
                     Required Level: {item.requiredLevel}
                 </Text>
             </View>

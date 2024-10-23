@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Switch, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PhrenicPoolSpheres from './PhrenicPoolSpheres';
@@ -27,6 +27,10 @@ const PhrenicPoolManager: React.FC = () => {
 
     const { playSound } = useSounds();
 
+    const calculatePhrenicPool = useCallback((characterLevel: number) => {
+        return Math.floor(characterLevel / 3) + 3;
+    }, []);
+
     useEffect(() => {
         loadSavedData();
     }, []);
@@ -37,15 +41,16 @@ const PhrenicPoolManager: React.FC = () => {
 
     const loadSavedData = async () => {
         try {
-            const savedLevel = await AsyncStorage.getItem('level');
-            const savedPhrenicPool = await AsyncStorage.getItem('phrenicPool');
-            const savedItems = await AsyncStorage.getItem('items');
+            const [savedLevel, savedPhrenicPool, savedItems] = await Promise.all([
+                AsyncStorage.getItem('level'),
+                AsyncStorage.getItem('phrenicPool'),
+                AsyncStorage.getItem('items')
+            ]);
 
-            if (savedLevel) setLevel(parseInt(savedLevel, 10));
-            if (savedPhrenicPool) setPhrenicPool(parseInt(savedPhrenicPool, 10));
+            if (savedLevel) setLevel(Math.min(Math.max(parseInt(savedLevel, 10), 1), 20));
+            if (savedPhrenicPool) setPhrenicPool(Math.min(Math.max(parseInt(savedPhrenicPool, 10), 0), calculatePhrenicPool(level)));
             if (savedItems) {
-                const parsedItems = JSON.parse(savedItems);
-                setItems(parsedItems);
+                setItems(JSON.parse(savedItems));
             } else {
                 initializeItems();
             }
@@ -54,13 +59,12 @@ const PhrenicPoolManager: React.FC = () => {
             initializeItems();
         }
     };
+
     const initializeItems = () => {
         const initialItems: Item[] = [
-            // Add your initial items here
-            { id: 'ability-1', name: 'Dreamshaper', effect: 'Modify dream spell', requiredLevel: 1, type: 'ability' as const, cost: 1, enabled: true },
-            { id: 'spell-1', name: 'Detect Psychic Significance', effect: 'Sense psychic auras', requiredLevel: 1, type: 'spell' as const, level: 1, restoreAmount: 1, enabled: true },
-            { id: 'power-1', name: 'Lullaby', effect: 'Makes target drowsy', requiredLevel: 1, type: 'power' as const, level: 1, enabled: true },
-            // ... add more items as needed
+            { id: 'ability-1', name: 'Dreamshaper', effect: 'Modify dream spell', requiredLevel: 1, type: 'ability', cost: 1, enabled: true } as Item,
+            { id: 'spell-1', name: 'Detect Psychic Significance', effect: 'Sense psychic auras', requiredLevel: 1, type: 'spell', level: 1, restoreAmount: 1, enabled: true } as Item,
+            { id: 'power-1', name: 'Lullaby', effect: 'Makes target drowsy', requiredLevel: 1, type: 'power', level: 1, enabled: true } as Item,
         ].sort((a, b) => a.requiredLevel - b.requiredLevel);
 
         setItems(initialItems);
@@ -68,90 +72,85 @@ const PhrenicPoolManager: React.FC = () => {
 
     const saveData = async () => {
         try {
-            await AsyncStorage.setItem('level', level.toString());
-            await AsyncStorage.setItem('phrenicPool', phrenicPool.toString());
-            await AsyncStorage.setItem('items', JSON.stringify(items));
+            const data = {
+                level: level.toString(),
+                phrenicPool: phrenicPool.toString(),
+                items: JSON.stringify(items)
+            };
+            await AsyncStorage.multiSet(Object.entries(data));
         } catch (error) {
             console.error('Error saving data:', error);
         }
     };
 
-    const calculatePhrenicPool = (characterLevel: number) => {
-        return Math.floor(characterLevel / 3) + 3;
-    };
-
-    const useAbility = (cost: number) => {
+    const useAbility = useCallback((cost: number) => {
         if (phrenicPool >= cost) {
-            setPhrenicPool(phrenicPool - cost);
+            setPhrenicPool(prev => prev - cost);
             playSound('ability');
         }
-    };
+    }, [phrenicPool, playSound]);
 
-    const castSpell = (spell: Item) => {
+    const castSpell = useCallback((spell: Item) => {
         if (level >= spell.requiredLevel) {
-            const newPool = Math.min(calculatePhrenicPool(level), phrenicPool + (spell.restoreAmount || 0));
-            setPhrenicPool(newPool);
+            setPhrenicPool(prev => Math.min(calculatePhrenicPool(level), prev + (spell.restoreAmount || 0)));
             playSound('spell');
             Alert.alert('Success!', `${spell.name} was cast successfully. Restored ${spell.restoreAmount} point(s) to the phrenic pool.`);
         } else {
             Alert.alert('Level Too Low', `You need to be at least level ${spell.requiredLevel} to cast ${spell.name}.`);
         }
-    };
+    }, [level, calculatePhrenicPool, playSound]);
 
-    const usePower = (power: Item) => {
+    const usePower = useCallback((power: Item) => {
         if (level >= power.requiredLevel) {
             playSound('power');
             Alert.alert('Power Used', `${power.name} (Level ${power.level})\n\nEffect: ${power.effect}`);
         } else {
             Alert.alert('Level Too Low', `You need to be at least level ${power.requiredLevel} to use ${power.name}.`);
         }
-    };
+    }, [level, playSound]);
 
-    const toggleItemEnabled = (id: string) => {
+    const toggleItemEnabled = useCallback((id: string) => {
         setItems(prevItems =>
             prevItems.map(item =>
                 item.id === id ? { ...item, enabled: !item.enabled } : item
             )
         );
-    };
+    }, []);
 
-    const isItemAvailable = (item: Item) => {
+    const isItemAvailable = useCallback((item: Item) => {
         if (level < item.requiredLevel) return false;
         if (item.type === 'ability' && phrenicPool < (item.cost || 0)) return false;
-        if (item.type === 'spell' && item.cost && phrenicPool < item.cost) return false;
-        if (item.type === 'power' && item.cost && phrenicPool < item.cost) return false;
+        if ((item.type === 'spell' || item.type === 'power') && item.cost && phrenicPool < item.cost) return false;
         return true;
-    };
+    }, [level, phrenicPool]);
 
-    const renderItems = () => {
+    const renderItems = useCallback(() => {
         return items
             .filter(item => item.type !== 'spell' || item.enabled)
             .filter(item => showAllLevels || item.requiredLevel <= level)
-            .reduce((acc: JSX.Element[], item) => {
-                acc.push(
-                    <ItemCard
-                        key={item.id}
-                        item={item}
-                        isAvailable={isItemAvailable(item)}
-                        onUse={() => {
-                            if (item.type === 'ability') useAbility(item.cost || 0);
-                            else if (item.type === 'spell') castSpell(item);
-                            else usePower(item);
-                        }}
-                        level={level}
-                        phrenicPool={phrenicPool}
-                    />
-                );
-                return acc;
-            }, []);
-    };
+            .map(item => (
+                <ItemCard
+                    key={item.id}
+                    item={item}
+                    isAvailable={isItemAvailable(item)}
+                    onUse={() => {
+                        if (item.type === 'ability') useAbility(item.cost || 0);
+                        else if (item.type === 'spell') castSpell(item);
+                        else usePower(item);
+                    }}
+                    level={level}
+                    phrenicPool={phrenicPool}
+                />
+            ));
+    }, [items, showAllLevels, level, isItemAvailable, useAbility, castSpell, usePower, phrenicPool]);
 
-    const changeLevel = (increment: number) => {
-        const newLevel = Math.max(1, Math.min(20, level + increment));
-        setLevel(newLevel);
-        const newPhrenicPool = calculatePhrenicPool(newLevel);
-        setPhrenicPool(newPhrenicPool);
-    };
+    const changeLevel = useCallback((increment: number) => {
+        setLevel(prev => {
+            const newLevel = Math.max(1, Math.min(20, prev + increment));
+            setPhrenicPool(calculatePhrenicPool(newLevel));
+            return newLevel;
+        });
+    }, [calculatePhrenicPool]);
 
     return (
         <ScrollView style={styles.container}>
@@ -280,12 +279,6 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    levelHeader: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginTop: 20,
         marginBottom: 10,
     },
     manageSpellsButton: {
