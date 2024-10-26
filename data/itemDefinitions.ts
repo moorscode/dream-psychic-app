@@ -4,7 +4,7 @@ export interface Item {
     effect: string;
     requiredLevel: number;
     requirements?: string;
-    type: 'ability' | 'spell' | 'power';
+    type: 'ability' | 'spell' | 'power' | 'amplification';
     cost?: number;
     level?: number;
     restoreAmount?: number;
@@ -199,13 +199,13 @@ export const initialItems: Item[] = [
         enabled: true,
         requirements: 'Target must be conscious and within line of sight'
     },
-    // Phrenic Amplifications
+    // Amplifications
     {
         id: 'amplification-mental-clarity',
         name: 'Mental Clarity',
         effect: 'You gain a +2 bonus on all Intelligence checks and saving throws for 1 hour.',
         requiredLevel: 2,
-        type: 'ability',
+        type: 'amplification',
         cost: 2,
         enabled: true,
         requirements: 'Must be in a calm environment'
@@ -215,7 +215,7 @@ export const initialItems: Item[] = [
         name: 'Psychic Resilience',
         effect: 'You gain resistance to psychic damage for 1 hour.',
         requiredLevel: 4,
-        type: 'ability',
+        type: 'amplification',
         cost: 3,
         enabled: true,
         requirements: 'Must be in a safe location'
@@ -225,7 +225,7 @@ export const initialItems: Item[] = [
         name: 'Dream Empowerment',
         effect: 'You can enhance the effects of your spells for 1 hour, increasing their effectiveness by 50%.',
         requiredLevel: 6,
-        type: 'ability',
+        type: 'amplification',
         cost: 4,
         enabled: true,
         requirements: 'Must be in a dream state'

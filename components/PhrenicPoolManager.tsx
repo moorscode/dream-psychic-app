@@ -1,18 +1,24 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Switch, Modal } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PhrenicPoolSpheres from './PhrenicPoolSpheres';
 import ItemCard from './ItemCard';
 import { useSounds } from '../hooks/useSounds';
 import { Item, initialItems } from '../data/itemDefinitions';
+import { Snackbar } from 'react-native-paper';
 
 const PhrenicPoolManager: React.FC = () => {
-    const [level, setLevel] = useState(1);
-    const [phrenicPool, setPhrenicPool] = useState(0);
-    const [items, setItems] = useState<Item[]>([]);
-    const [activatedSpells, setActivatedSpells] = useState<string[]>([]);
-    const [isSpellManagementVisible, setIsSpellManagementVisible] = useState(false);
-    const [showAllLevels, setShowAllLevels] = useState(false);
+    const [state, setState] = useState({
+        level: 1,
+        phrenicPool: 0,
+        items: initialItems,
+        activatedSpells: [] as string[],
+        isSpellManagementVisible: false,
+        showAllLevels: false,
+        activeAmplifications: [] as string[],
+        snackbarVisible: false,
+        snackbarMessage: '',
+    });
 
     const { playSound } = useSounds();
 
@@ -26,43 +32,45 @@ const PhrenicPoolManager: React.FC = () => {
 
     useEffect(() => {
         saveData();
-    }, [level, phrenicPool, activatedSpells]);
+    }, [state.level, state.phrenicPool, state.activatedSpells, state.activeAmplifications]);
 
     const loadSavedData = async () => {
         try {
-            const [savedLevel, savedPhrenicPool, savedActivatedSpells] = await Promise.all([
+            const [savedLevel, savedPhrenicPool, savedActivatedSpells, savedActiveAmplifications] = await Promise.all([
                 AsyncStorage.getItem('level'),
                 AsyncStorage.getItem('phrenicPool'),
-                AsyncStorage.getItem('activatedSpells')
+                AsyncStorage.getItem('activatedSpells'),
+                AsyncStorage.getItem('activeAmplifications')
             ]);
 
             const newLevel = savedLevel ? Math.min(Math.max(parseInt(savedLevel, 10), 1), 20) : 1;
-            setLevel(newLevel);
+            const newPhrenicPool = savedPhrenicPool
+                ? Math.min(Math.max(parseInt(savedPhrenicPool, 10), 0), calculatePhrenicPool(newLevel))
+                : calculatePhrenicPool(newLevel);
 
-            if (savedPhrenicPool) {
-                setPhrenicPool(Math.min(Math.max(parseInt(savedPhrenicPool, 10), 0), calculatePhrenicPool(newLevel)));
-            } else {
-                setPhrenicPool(calculatePhrenicPool(newLevel)); // Start with full phrenic pool if not saved
-            }
-
-            if (savedActivatedSpells) {
-                setActivatedSpells(JSON.parse(savedActivatedSpells));
-            }
-
-            setItems(initialItems);
+            setState(prev => ({
+                ...prev,
+                level: newLevel,
+                phrenicPool: newPhrenicPool,
+                activatedSpells: savedActivatedSpells ? JSON.parse(savedActivatedSpells) : [],
+                activeAmplifications: savedActiveAmplifications ? JSON.parse(savedActiveAmplifications) : [],
+            }));
         } catch (error) {
             console.error('Error loading saved data:', error);
-            setItems(initialItems);
-            setPhrenicPool(calculatePhrenicPool(level)); // Start with full phrenic pool on error
+            setState(prev => ({
+                ...prev,
+                phrenicPool: calculatePhrenicPool(prev.level)
+            }));
         }
     };
 
     const saveData = async () => {
         try {
             const data = {
-                level: level.toString(),
-                phrenicPool: phrenicPool.toString(),
-                activatedSpells: JSON.stringify(activatedSpells)
+                level: state.level.toString(),
+                phrenicPool: state.phrenicPool.toString(),
+                activatedSpells: JSON.stringify(state.activatedSpells),
+                activeAmplifications: JSON.stringify(state.activeAmplifications)
             };
             await AsyncStorage.multiSet(Object.entries(data));
         } catch (error) {
@@ -71,52 +79,78 @@ const PhrenicPoolManager: React.FC = () => {
     };
 
     const useAbility = useCallback((cost: number) => {
-        if (phrenicPool >= cost) {
-            setPhrenicPool(prev => prev - cost);
+        if (state.phrenicPool >= cost) {
+            setState(prev => ({ ...prev, phrenicPool: prev.phrenicPool - cost }));
             playSound('ability');
         }
-    }, [phrenicPool, playSound]);
+    }, [state.phrenicPool, playSound]);
 
     const castSpell = useCallback((spell: Item) => {
-        if (level >= spell.requiredLevel) {
-            setPhrenicPool(prev => Math.min(calculatePhrenicPool(level), prev + (spell.restoreAmount || 0)));
-            playSound('spell');
-            Alert.alert('Success!', `${spell.name} was cast successfully. Restored ${spell.restoreAmount} point(s) to the phrenic pool.`);
+        if (state.level >= spell.requiredLevel) {
+            const amplificationCost = state.activeAmplifications.length;
+            if (state.phrenicPool >= amplificationCost) {
+                setState(prev => ({
+                    ...prev,
+                    phrenicPool: Math.min(calculatePhrenicPool(prev.level), prev.phrenicPool + (spell.restoreAmount || 0) - amplificationCost),
+                    activeAmplifications: [],
+                    snackbarMessage: `Success! ${spell.name} was cast successfully. ${amplificationCost > 0 ? `Used ${amplificationCost} phrenic pool point(s) for amplifications. ` : ''}Restored ${spell.restoreAmount} point(s) to the phrenic pool.`,
+                    snackbarVisible: true
+                }));
+                playSound('spell');
+            } else {
+                setState(prev => ({
+                    ...prev,
+                    snackbarMessage: `Not Enough Phrenic Pool: You need ${amplificationCost} phrenic pool point(s) to cast ${spell.name} with the active amplifications.`,
+                    snackbarVisible: true
+                }));
+            }
         } else {
-            Alert.alert('Level Too Low', `You need to be at least level ${spell.requiredLevel} to cast ${spell.name}.`);
+            setState(prev => ({
+                ...prev,
+                snackbarMessage: `Level Too Low: You need to be at least level ${spell.requiredLevel} to cast ${spell.name}.`,
+                snackbarVisible: true
+            }));
         }
-    }, [level, calculatePhrenicPool, playSound]);
+    }, [state.level, state.phrenicPool, state.activeAmplifications, calculatePhrenicPool, playSound]);
 
     const usePower = useCallback((power: Item) => {
-        if (level >= power.requiredLevel) {
+        if (state.level >= power.requiredLevel) {
             playSound('power');
-            Alert.alert('Power Used', `${power.name} (Level ${power.level})\n\nEffect: ${power.effect}`);
+            setState(prev => ({
+                ...prev,
+                snackbarMessage: `Power Used: ${power.name} (Level ${power.level})\n\nEffect: ${power.effect}`,
+                snackbarVisible: true
+            }));
         } else {
-            Alert.alert('Level Too Low', `You need to be at least level ${power.requiredLevel} to use ${power.name}.`);
+            setState(prev => ({
+                ...prev,
+                snackbarMessage: `Level Too Low: You need to be at least level ${power.requiredLevel} to use ${power.name}.`,
+                snackbarVisible: true
+            }));
         }
-    }, [level, playSound]);
+    }, [state.level, playSound]);
 
     const toggleItemEnabled = useCallback((id: string) => {
-        setActivatedSpells(prevActivatedSpells => {
-            if (prevActivatedSpells.includes(id)) {
-                return prevActivatedSpells.filter(spellId => spellId !== id);
-            } else {
-                return [...prevActivatedSpells, id];
-            }
-        });
+        setState(prev => ({
+            ...prev,
+            activatedSpells: prev.activatedSpells.includes(id)
+                ? prev.activatedSpells.filter(spellId => spellId !== id)
+                : [...prev.activatedSpells, id]
+        }));
     }, []);
 
     const isItemAvailable = useCallback((item: Item) => {
-        if (level < item.requiredLevel) return false;
-        if (item.type === 'ability' && phrenicPool < (item.cost || 0)) return false;
-        if ((item.type === 'spell' || item.type === 'power') && item.cost && phrenicPool < item.cost) return false;
+        if (state.level < item.requiredLevel) return false;
+        if (item.type === 'ability' && state.phrenicPool < (item.cost || 0)) return false;
+        if (item.type === 'spell' && state.activeAmplifications.length > 0 && state.phrenicPool < state.activeAmplifications.length) return false;
+        if (item.type === 'power' && item.cost && state.phrenicPool < item.cost) return false;
         return true;
-    }, [level, phrenicPool, showAllLevels]);
+    }, [state.level, state.phrenicPool, state.activeAmplifications]);
 
-    const renderItems = useCallback(() => {
-        return items
-            .filter(item => item.type !== 'spell' || activatedSpells.includes(item.id))
-            .filter(item => showAllLevels || item.requiredLevel <= level)
+    const renderItems = useMemo(() => {
+        return state.items
+            .filter(item => item.type !== 'spell' || state.activatedSpells.includes(item.id))
+            .filter(item => state.showAllLevels || item.requiredLevel <= state.level)
             .sort((a, b) => {
                 if (a.requiredLevel !== b.requiredLevel) {
                     return a.requiredLevel - b.requiredLevel;
@@ -133,19 +167,33 @@ const PhrenicPoolManager: React.FC = () => {
                         else if (item.type === 'spell') castSpell(item);
                         else usePower(item);
                     }}
-                    level={level}
-                    phrenicPool={phrenicPool}
+                    level={state.level}
+                    phrenicPool={state.phrenicPool}
+                    activeAmplifications={state.activeAmplifications}
+                    toggleAmplification={toggleAmplification}
                 />
             ));
-    }, [items, activatedSpells, showAllLevels, level, isItemAvailable, useAbility, castSpell, usePower, phrenicPool]);
+    }, [state.items, state.activatedSpells, state.showAllLevels, state.level, state.phrenicPool, isItemAvailable, useAbility, castSpell, usePower]);
 
     const changeLevel = useCallback((increment: number) => {
-        setLevel(prev => {
-            const newLevel = Math.max(1, Math.min(20, prev + increment));
-            setPhrenicPool(calculatePhrenicPool(newLevel));
-            return newLevel;
+        setState(prev => {
+            const newLevel = Math.max(1, Math.min(20, prev.level + increment));
+            return {
+                ...prev,
+                level: newLevel,
+                phrenicPool: calculatePhrenicPool(newLevel)
+            };
         });
     }, [calculatePhrenicPool]);
+
+    const toggleAmplification = useCallback((amplificationId: string) => {
+        setState(prev => ({
+            ...prev,
+            activeAmplifications: prev.activeAmplifications.includes(amplificationId)
+                ? prev.activeAmplifications.filter(id => id !== amplificationId)
+                : [...prev.activeAmplifications, amplificationId]
+        }));
+    }, []);
 
     return (
         <ScrollView style={styles.container}>
@@ -156,50 +204,53 @@ const PhrenicPoolManager: React.FC = () => {
                 <TouchableOpacity onPress={() => changeLevel(-1)} style={styles.levelButton}>
                     <Text style={styles.buttonText}>-</Text>
                 </TouchableOpacity>
-                <Text style={styles.levelText}>Level: {level}</Text>
+                <Text style={styles.levelText}>Level: {state.level}</Text>
                 <TouchableOpacity onPress={() => changeLevel(1)} style={styles.levelButton}>
                     <Text style={styles.buttonText}>+</Text>
                 </TouchableOpacity>
             </View>
 
-            <Text style={styles.poolText}>Phrenic Pool: {phrenicPool}/{calculatePhrenicPool(level)}</Text>
-            <PhrenicPoolSpheres total={calculatePhrenicPool(level)} used={calculatePhrenicPool(level) - phrenicPool} />
+            <Text style={styles.poolText}>Phrenic Pool: {state.phrenicPool}/{calculatePhrenicPool(state.level)}</Text>
+            <PhrenicPoolSpheres total={calculatePhrenicPool(state.level)} used={calculatePhrenicPool(state.level) - state.phrenicPool} />
 
             <View style={styles.toggleContainer}>
                 <Text style={styles.toggleLabel}>Show All Levels:</Text>
                 <Switch
-                    value={showAllLevels}
-                    onValueChange={setShowAllLevels}
+                    value={state.showAllLevels}
+                    onValueChange={(value) => setState(prev => ({ ...prev, showAllLevels: value }))}
                 />
             </View>
 
             <TouchableOpacity
                 style={styles.manageSpellsButton}
-                onPress={() => setIsSpellManagementVisible(true)}
+                onPress={() => setState(prev => ({ ...prev, isSpellManagementVisible: true }))}
             >
                 <Text style={styles.buttonText}>Manage Spells</Text>
             </TouchableOpacity>
 
             <View style={styles.cardContainer}>
                 <Text style={styles.sectionTitle}>Abilities, Spells, and Powers:</Text>
-                {renderItems()}
+                {renderItems}
             </View>
 
-            <TouchableOpacity style={styles.restoreButton} onPress={() => setPhrenicPool(calculatePhrenicPool(level))}>
+            <TouchableOpacity 
+                style={styles.restoreButton} 
+                onPress={() => setState(prev => ({ ...prev, phrenicPool: calculatePhrenicPool(prev.level), activeAmplifications: []}))}
+            >
                 <Text style={styles.buttonText}>Restore Phrenic Pool</Text>
             </TouchableOpacity>
 
             <Modal
-                visible={isSpellManagementVisible}
+                visible={state.isSpellManagementVisible}
                 animationType="slide"
                 transparent={true}
-                onRequestClose={() => setIsSpellManagementVisible(false)}
+                onRequestClose={() => setState(prev => ({ ...prev, isSpellManagementVisible: false }))}
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Manage Spells</Text>
                         <ScrollView style={styles.spellList}>
-                            {items
+                            {state.items
                                 .filter(item => item.type === 'spell')
                                 .sort((a, b) => a.requiredLevel - b.requiredLevel)
                                 .map(spell => (
@@ -209,7 +260,7 @@ const PhrenicPoolManager: React.FC = () => {
                                             <Text style={styles.spellLevel}>Level: {spell.requiredLevel}</Text>
                                         </View>
                                         <Switch
-                                            value={activatedSpells.includes(spell.id)}
+                                            value={state.activatedSpells.includes(spell.id)}
                                             onValueChange={() => toggleItemEnabled(spell.id)}
                                         />
                                     </View>
@@ -217,13 +268,22 @@ const PhrenicPoolManager: React.FC = () => {
                         </ScrollView>
                         <TouchableOpacity
                             style={styles.closeModalButton}
-                            onPress={() => setIsSpellManagementVisible(false)}
+                            onPress={() => setState(prev => ({ ...prev, isSpellManagementVisible: false }))}
                         >
                             <Text style={styles.buttonText}>Close</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
+
+            <Snackbar
+                visible={state.snackbarVisible}
+                onDismiss={() => setState(prev => ({ ...prev, snackbarVisible: false }))}
+                duration={2000}
+                style={styles.snackbar}
+            >
+                {state.snackbarMessage}
+            </Snackbar>
         </ScrollView>
     );
 };
@@ -363,6 +423,12 @@ const styles = StyleSheet.create({
     toggleLabel: {
         marginRight: 10,
         fontSize: 16,
+    },
+    snackbar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
     },
 });
 
