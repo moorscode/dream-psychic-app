@@ -258,6 +258,7 @@ const PhrenicPoolManager: React.FC = () => {
                                         <View style={styles.spellInfo}>
                                             <Text style={styles.spellName}>{spell.name}</Text>
                                             <Text style={styles.spellLevel}>Level: {spell.requiredLevel}</Text>
+                                            <Text style={styles.spellDescription}>{spell.effect}</Text>
                                         </View>
                                         <Switch
                                             value={state.activatedSpells.includes(spell.id)}
@@ -403,6 +404,11 @@ const styles = StyleSheet.create({
     spellLevel: {
         fontSize: 14,
         color: '#666',
+    },
+    spellDescription: {
+        fontSize: 14,
+        marginTop: 5,
+        color: '#333',
     },
     closeModalButton: {
         backgroundColor: '#f44336',
