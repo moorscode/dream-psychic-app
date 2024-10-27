@@ -138,6 +138,42 @@ export const initialItems: Item[] = [
         enabled: true,
         requirements: 'Target must be asleep and you must have some prior knowledge of the target'
     },
+    {
+        id: 'spell-dream-weaving',
+        name: 'Dream Weaving',
+        effect: 'You can manipulate the fabric of dreams, creating complex and vivid dreamscapes. This allows you to create a shared dream environment for up to 5 willing participants. Within this dream, you can manifest objects, creatures, and scenarios limited only by your imagination. The dream lasts for 1 hour per caster level.',
+        requiredLevel: 6,
+        type: 'spell',
+        level: 3,
+        cost: 3,
+        restoreAmount: 2,
+        enabled: true,
+        requirements: 'All participants must be asleep and within 100 feet of each other'
+    },
+    {
+        id: 'spell-dreamscape-manipulation',
+        name: 'Dreamscape Manipulation',
+        effect: 'You gain the ability to alter the fundamental laws of physics and reality within a dream. This can be used to create impossible scenarios, manipulate time and space, or even grant temporary abilities to dreamers. Make a Wisdom check (DC 20) to maintain control over complex manipulations.',
+        requiredLevel: 8,
+        type: 'spell',
+        level: 4,
+        cost: 4,
+        restoreAmount: 2,
+        enabled: true,
+        requirements: 'Must be within a dream'
+    },
+    {
+        id: 'spell-dream-walking',
+        name: 'Dream Walking',
+        effect: 'You can move freely between different dreams, allowing you to visit multiple dreamers in a single night. You can affect up to 1 dreamer per 2 caster levels, spending up to 10 minutes in each dream. You can communicate, gather information, or influence each dream as if using the dream spell.',
+        requiredLevel: 7,
+        type: 'spell',
+        level: 4,
+        cost: 4,
+        restoreAmount: 2,
+        enabled: true,
+        requirements: 'Targets must be asleep and within 1 mile'
+    },
     // Powers
     {
         id: 'power-mindscape',
